@@ -36,85 +36,102 @@ namespace PS5_Firmware_Checker
 
         public static void ParseRetailFirmware()
         {
-            using (WebClient retailDownloadXML = new WebClient())
-            SystemFirmware.DownloadString = retailDownloadXML.DownloadString("http://fus01.ps5.update.playstation.net/update/ps5/list/us/ps5-updatelist.xml");
-            XDocument xdoc = XDocument.Parse(SystemFirmware.DownloadString);
-            //system pup
-            xdoc.Descendants("region").Select(sys => new
-            {
-                label = sys.Element("system_pup").Attribute("label"),
-                sdkVersion = sys.Element("system_pup").Attribute("sdk_version"),
-                fwVersion = sys.Element("system_pup").Attribute("version"),
-            }).ToList().ForEach(sys =>
-            {
-                SystemFirmware.FirmwareLabel = sys.label.ToString().Replace("label=", "").Replace("\"", "");
-                SystemFirmware.SdkVersion = sys.sdkVersion.ToString().Replace("sdk_version=", "").Replace("\"", "");
-                SystemFirmware.FirmwareVersion = sys.fwVersion.ToString().Replace("version=", "").Replace("\"", "");
-            });
-            xdoc.Descendants("force_update").Select(misc => new
-            {
-                mandatory = misc.Element("system").Attribute("level0_system_version"),
-            }).ToList().ForEach(misc =>
-            {
-                SystemFirmware.MandatoryString = misc.mandatory.ToString();
-                SystemFirmware.MandatoryString = SystemFirmware.MandatoryString.Replace("level0_system_version", "").Replace("\"", "").Replace("=", "");
-                if (SystemFirmware.FirmwareVersion != SystemFirmware.MandatoryString)
-                    SystemFirmware.Mandatory = false;
-                else 
-                    SystemFirmware.Mandatory = true;
-            });
-            xdoc.Descendants("update_data").Select(misc => new
-            {
-                Size = misc.Element("image").Attribute("size"),
-            }).ToList().ForEach(misc =>
-            {
-                SystemFirmware.SizeString = misc.Size.ToString().Replace("size=", "").Replace("\"", "");
-                var size_int = Convert.ToInt32(SystemFirmware.SizeString);
-                SystemFirmware.Size = ByteSize.FromBytes(size_int).ToString();
-            });
-            xdoc.Descendants("update_data").Select(misc => new
-            {
-                Link = misc.Element("image")
+            //using (WebClient retailDownloadXML = new WebClient())
+            //SystemFirmware.DownloadString = retailDownloadXML.DownloadString("https://fus01.ps5.update.playstation.net/update/ps5/official/tJMRE80IbXnE9YuG0jzTXgKEjIMoabr6/list/us/updatelist.xml");
+            //XDocument xdoc = XDocument.Parse(SystemFirmware.DownloadString);
 
-            }).ToList().ForEach(misc =>
+            var nasdaq = string.Format(@"https://fsa01.ps5.update.playstation.net/update/ps5/official/tJMRE80IbXnE9YuG0jzTXgKEjIMoabr6/list/sa/updatelist.xml");
+            using (WebClient wc = new WebClient())
             {
-                SystemFirmware.Link = misc.Link.ToString().Replace("<image size=\"", "").Replace("\"", "").Replace("\">", "").Replace("?dest=sa</image>", "").Replace(">", "").Replace(SystemFirmware.Size, "").Replace(SystemFirmware.SizeString, ""); ;
-            });
-            SystemFirmware.Md5 = SystemFirmware.Link.Substring(SystemFirmware.Link.IndexOf('_') + 10);
-            string SysMd5 = SystemFirmware.Md5.Split('/')[0];
-            SystemFirmware.Md5 = SysMd5.ToUpper();
-            //recovery pup
-            xdoc.Descendants("recovery_pup").Select(misc => new
-            {
-                size = misc.Element("image").Attribute("size"),
-            }).ToList().ForEach(misc =>
-            {
-                RecoveryFirmware.SizeString = misc.size.ToString().Replace("size=", "").Replace("\"", "");
-                var size_int = Convert.ToInt32(RecoveryFirmware.SizeString);
-                RecoveryFirmware.Size = ByteSize.FromBytes(size_int).ToString();
-            });
-            xdoc.Descendants("recovery_pup").Select(misc => new
-            {
-                Link = misc.Element("image")
-            }).ToList().ForEach(misc =>
-            {
-                RecoveryFirmware.Link = misc.Link.ToString().Replace("<image size=\"", "").Replace("\"", "").Replace("\">", "").Replace("?dest=sa</image>", "").Replace(">", "").Replace(RecoveryFirmware.SizeString, "");
-            });
-            xdoc.Descendants("recovery_pup").Select(rec => new
-            {
-                label = rec.Element("system_pup").Attribute("label"),
-                sdkVersion = rec.Element("system_pup").Attribute("sdk_version"),
-                fwVersion = rec.Element("system_pup").Attribute("version"),
+                ServicePointManager
+       .ServerCertificateValidationCallback +=
+       (send, cert, chain, sslPolicyErrors) => true;
+                wc.Headers.Add("cookie", "");
 
-            }).ToList().ForEach(rec =>
-            {
-                RecoveryFirmware.FirmwareLabel = rec.label.ToString().Replace("label=", "").Replace("\"", "");
-                RecoveryFirmware.SdkVersion = rec.sdkVersion.ToString().Replace("sdk_version=", "").Replace("\"", "");
-                RecoveryFirmware.FirmwareVersion = rec.fwVersion.ToString().Replace("version=", "").Replace("\"", "");
-            });
-            RecoveryFirmware.Md5 = RecoveryFirmware.Link.Substring(RecoveryFirmware.Link.IndexOf('_') + 10);
-            string recMd5 = RecoveryFirmware.Md5.Split('/')[0];
-            RecoveryFirmware.Md5 = recMd5.ToUpper();
+                SystemFirmware.DownloadString = wc.DownloadString(nasdaq);
+                XDocument xdoc = XDocument.Parse(SystemFirmware.DownloadString);
+                //system pup
+                xdoc.Descendants("region").Select(sys => new
+                {
+                    label = sys.Element("system_pup").Attribute("label").Value,
+                    sdkVersion = sys.Element("system_pup").Attribute("sdk_version").Value,
+                    fwVersion = sys.Element("system_pup").Attribute("upd_version").Value,
+                }).ToList().ForEach(sys =>
+                {
+                    SystemFirmware.FirmwareLabel = sys.label;
+                    SystemFirmware.SdkVersion = sys.sdkVersion;
+                    SystemFirmware.FirmwareVersion = sys.fwVersion;
+                });
+                //xdoc.Descendants("force_update").Select(misc => new
+                //{
+                //    mandatory = misc.Element("system").Attribute("level0_system_version"),
+                //}).ToList().ForEach(misc =>
+                //{
+                //    SystemFirmware.MandatoryString = misc.mandatory.ToString();
+                //    SystemFirmware.MandatoryString = SystemFirmware.MandatoryString.Replace("level0_system_version", "").Replace("\"", "").Replace("=", "");
+                //    if (SystemFirmware.FirmwareVersion != SystemFirmware.MandatoryString)
+                //        SystemFirmware.Mandatory = false;
+                //    else
+                //        SystemFirmware.Mandatory = true;
+                //});
+                xdoc.Descendants("update_data").Select(misc => new
+                {
+                    Size = misc.Element("image").Attribute("size").Value,
+                }).ToList().ForEach(misc =>
+                {
+                    SystemFirmware.SizeString = misc.Size;
+                    var size_int = Convert.ToInt32(SystemFirmware.SizeString);
+                    SystemFirmware.Size = ByteSize.FromBytes(size_int).ToString();
+                });
+                xdoc.Descendants("update_data").Select(misc => new
+                {
+                    Link = misc.Element("image").Value
+
+                }).ToList().ForEach(misc =>
+                {
+                    SystemFirmware.Link = misc.Link.ToString().Replace("<image size=\"", "").Replace("\"", "").Replace("\">", "").Replace("?dest=sa</image>", "").Replace(">", "").Replace(SystemFirmware.Size, "").Replace(SystemFirmware.SizeString, ""); ;
+                });
+                SystemFirmware.Sha256 = SystemFirmware.Link.Substring(SystemFirmware.Link.IndexOf('_') + 10);
+                string SysMd5 = SystemFirmware.Sha256.Split('/')[0];
+                SystemFirmware.Sha256 = SysMd5.ToUpper();
+                #region recovery
+                //recovery pup
+                //xdoc.Descendants("recovery_pup").Select(misc => new
+                //{
+                //    size = misc.Element("image").Attribute("size"),
+                //}).ToList().ForEach(misc =>
+                //{
+                //    RecoveryFirmware.SizeString = misc.size.ToString().Replace("size=", "").Replace("\"", "");
+                //    var size_int = Convert.ToInt32(RecoveryFirmware.SizeString);
+                //    RecoveryFirmware.Size = ByteSize.FromBytes(size_int).ToString();
+                //});
+                //xdoc.Descendants("recovery_pup").Select(misc => new
+                //{
+                //    Link = misc.Element("image")
+                //}).ToList().ForEach(misc =>
+                //{
+                //    RecoveryFirmware.Link = misc.Link.ToString().Replace("<image size=\"", "").Replace("\"", "").Replace("\">", "").Replace("?dest=sa</image>", "").Replace(">", "").Replace(RecoveryFirmware.SizeString, "");
+                //});
+                //xdoc.Descendants("recovery_pup").Select(rec => new
+                //{
+                //    label = rec.Element("system_pup").Attribute("label"),
+                //    sdkVersion = rec.Element("system_pup").Attribute("sdk_version"),
+                //    fwVersion = rec.Element("system_pup").Attribute("version"),
+
+                //}).ToList().ForEach(rec =>
+                //{
+                //    RecoveryFirmware.FirmwareLabel = rec.label.ToString().Replace("label=", "").Replace("\"", "");
+                //    RecoveryFirmware.SdkVersion = rec.sdkVersion.ToString().Replace("sdk_version=", "").Replace("\"", "");
+                //    RecoveryFirmware.FirmwareVersion = rec.fwVersion.ToString().Replace("version=", "").Replace("\"", "");
+                //});
+                //RecoveryFirmware.Md5 = RecoveryFirmware.Link.Substring(RecoveryFirmware.Link.IndexOf('_') + 10);
+                //string recMd5 = RecoveryFirmware.Md5.Split('/')[0];
+                //RecoveryFirmware.Md5 = recMd5.ToUpper();
+                #endregion recovery
+            }
+
+
+
         }
 
         public static void ParseBetaFirmware()
@@ -212,11 +229,11 @@ namespace PS5_Firmware_Checker
                 get { return Mandatory_; }
                 set { Mandatory_ = value; }
             }
-            private static string Md5_;
-            public static string Md5
+            private static string Sha256_;
+            public static string Sha256
             {
-                get { return Md5_; }
-                set { Md5_ = value; }
+                get { return Sha256_; }
+                set { Sha256_ = value; }
             }
             private static string Link_;
             public static string Link

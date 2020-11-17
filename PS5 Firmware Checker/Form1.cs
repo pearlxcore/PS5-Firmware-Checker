@@ -29,8 +29,8 @@ namespace PS5_Firmware_Checker
         {
             if(Helper.CheckForInternetConnection() == false) 
             { 
-                ShowError("No internet network detected. Please check your internet connection.");
-                return;
+                ShowError("No internet network detected. Please check your internet connection. Program will exit.");
+                Application.Exit();
             }
                 
             try
@@ -41,17 +41,19 @@ namespace PS5_Firmware_Checker
                 tbSdkVersion.Text = Helper.SystemFirmware.SdkVersion;
                 tbFwVersion.Text = Helper.SystemFirmware.FirmwareVersion;
                 tbFwSize.Text = Helper.SystemFirmware.Size;
-                tbMandatory.Text = Helper.SystemFirmware.Mandatory.ToString();
-                tbMd5.Text = Helper.SystemFirmware.Md5;
-                tbLink.Text = Helper.SystemFirmware.Link;
-                //recovery
-                tbLabelRec.Text = Helper.RecoveryFirmware.FirmwareLabel;
-                tbSdkVersionRec.Text = Helper.RecoveryFirmware.SdkVersion;
-                tbFwVersionRec.Text = Helper.RecoveryFirmware.FirmwareVersion;
-                tbFwSizeRec.Text = Helper.RecoveryFirmware.Size;
-                tbMandatoryRec.Text = Helper.RecoveryFirmware.Mandatory.ToString();
-                tbMd5Rec.Text = Helper.RecoveryFirmware.Md5;
-                tbLinkRec.Text = Helper.RecoveryFirmware.Link;
+                tbSha256.Text = Helper.SystemFirmware.Sha256;
+                //tbMandatory.Text = Helper.SystemFirmware.Mandatory.ToString();
+                //tbMd5.Text = Helper.SystemFirmware.Md5;
+                //tbLink.Text = Helper.SystemFirmware.Link;
+
+                ////recovery
+                //tbLabelRec.Text = Helper.RecoveryFirmware.FirmwareLabel;
+                //tbSdkVersionRec.Text = Helper.RecoveryFirmware.SdkVersion;
+                //tbFwVersionRec.Text = Helper.RecoveryFirmware.FirmwareVersion;
+                //tbFwSizeRec.Text = Helper.RecoveryFirmware.Size;
+                //tbMandatoryRec.Text = Helper.RecoveryFirmware.Mandatory.ToString();
+                //tbMd5Rec.Text = Helper.RecoveryFirmware.Md5;
+                //tbLinkRec.Text = Helper.RecoveryFirmware.Link;
             }
             catch (Exception ex) { ShowError(ex.Message); }
         }
@@ -120,72 +122,61 @@ namespace PS5_Firmware_Checker
             {
                 url = Helper.SystemFirmware.Link + "?dest=us";
             }
-            System.Diagnostics.Process.Start(url);
         }
 
-        private void btnDownloadSystem_Click(object sender, EventArgs e)
+
+        private void btnDownloadSystem_Click_1(object sender, EventArgs e)
         {
-            if (cbRegionRecovery.SelectedText == "")
+            if (cbRegionSystem.SelectedItem == null)
                 return;
             string url = "";
-            if (cbRegionRecovery.SelectedText == "Southeast Asia")
+            if (cbRegionSystem.SelectedItem == "Southeast Asia")
             {
-                Helper.RecoveryFirmware.Link = Helper.RecoveryFirmware.Link.Replace("dus01", "dsa01");
-                url = Helper.RecoveryFirmware.Link + "?dest=sa";
+                url = Helper.SystemFirmware.Link;
             }
-            else if (cbRegionRecovery.SelectedText == "United Kingdom")
+            else if (cbRegionSystem.SelectedItem == "United Kingdom")
             {
-                Helper.RecoveryFirmware.Link = Helper.RecoveryFirmware.Link.Replace("dsa01", "duk01");
-                url = Helper.RecoveryFirmware.Link + "?dest=uk";
+                url = Helper.SystemFirmware.Link.Replace("dsa01", "duk01").Replace("?dest=sa", "?dest=uk");
             }
-            else if (cbRegionRecovery.SelectedText == "Australia")
+            else if (cbRegionSystem.SelectedItem == "Australia")
             {
-                Helper.RecoveryFirmware.Link = Helper.RecoveryFirmware.Link.Replace("dsa01", "dau01");
-                url = Helper.RecoveryFirmware.Link + "?dest=au";
+                url = Helper.SystemFirmware.Link.Replace("dsa01", "dau01").Replace("?dest=sa", "?dest=au");
             }
-            else if (cbRegionRecovery.SelectedText == "Brazil")
+            else if (cbRegionSystem.SelectedItem == "Brazil")
             {
-                Helper.RecoveryFirmware.Link = Helper.RecoveryFirmware.Link.Replace("dsa01", "dbr01");
-                url = Helper.RecoveryFirmware.Link + "?dest=br";
+                url = Helper.SystemFirmware.Link.Replace("dsa01", "dbr01").Replace("?dest=sa", "?dest=br");
             }
-            else if (cbRegionRecovery.SelectedText == "China")
+            else if (cbRegionSystem.SelectedItem == "China")
             {
-                Helper.RecoveryFirmware.Link = Helper.RecoveryFirmware.Link.Replace("dsa01", "dcn01");
-                url = Helper.RecoveryFirmware.Link + "?dest=cn";
+                url = Helper.SystemFirmware.Link.Replace("dsa01", "dcn01").Replace("?dest=sa", "?dest=cn");
             }
-            else if (cbRegionRecovery.SelectedText == "European Union")
+            else if (cbRegionSystem.SelectedItem == "European Union")
             {
-                Helper.RecoveryFirmware.Link = Helper.RecoveryFirmware.Link.Replace("dsa01", "deu01");
-                url = Helper.RecoveryFirmware.Link + "?dest=eu";
+                url = Helper.SystemFirmware.Link.Replace("dsa01", "deu01").Replace("?dest=sa", "?dest=eu");
             }
-            else if (cbRegionRecovery.SelectedText == "Latin/Central America")
+            else if (cbRegionSystem.SelectedItem == "Latin/Central America")
             {
-                Helper.RecoveryFirmware.Link = Helper.RecoveryFirmware.Link.Replace("dsa01", "dmx01");
-                url = Helper.RecoveryFirmware.Link + "?dest=mx";
+                url = Helper.SystemFirmware.Link.Replace("dsa01", "dmx01").Replace("?dest=sa", "?dest=mx");
             }
-            else if (cbRegionRecovery.SelectedText == "Rusia")
+            else if (cbRegionSystem.SelectedItem == "Rusia")
             {
-                Helper.RecoveryFirmware.Link = Helper.RecoveryFirmware.Link.Replace("dsa01", "dru01");
-                url = Helper.RecoveryFirmware.Link + "?dest=ru";
+                url = Helper.SystemFirmware.Link.Replace("dsa01", "dru01").Replace("?dest=sa", "?dest=ru");
             }
-            else if (cbRegionRecovery.SelectedText == "Taiwan")
+            else if (cbRegionSystem.SelectedItem == "Taiwan")
             {
-                Helper.RecoveryFirmware.Link = Helper.RecoveryFirmware.Link.Replace("dsa01", "dtw01");
-                url = Helper.RecoveryFirmware.Link + "?dest=tw";
+                url = Helper.SystemFirmware.Link.Replace("dsa01", "dtw01").Replace("?dest=sa", "?dest=tw");
             }
-            else if (cbRegionRecovery.SelectedText == "Japan")
+            else if (cbRegionSystem.SelectedItem == "Japan")
             {
-                Helper.RecoveryFirmware.Link = Helper.RecoveryFirmware.Link.Replace("dsa01", "djp01");
-                url = Helper.RecoveryFirmware.Link + "?dest=jp";
+                url = Helper.SystemFirmware.Link.Replace("dsa01", "djp01").Replace("?dest=sa", "?dest=jp");
             }
-            else if (cbRegionRecovery.SelectedText == "Korea")
+            else if (cbRegionSystem.SelectedItem == "Korea")
             {
-                Helper.RecoveryFirmware.Link = Helper.RecoveryFirmware.Link.Replace("dsa01", "dkr01");
-                url = Helper.RecoveryFirmware.Link + "?dest=kr";
+                url = Helper.SystemFirmware.Link.Replace("dsa01", "dkr01").Replace("?dest=sa", "?dest=kr");
             }
-            else if (cbRegionRecovery.SelectedText == "United States")
+            else if (cbRegionSystem.SelectedItem == "United States")
             {
-                url = Helper.RecoveryFirmware.Link + "?dest=us";
+                url = Helper.SystemFirmware.Link.Replace("dsa01", "dus01").Replace("?dest=sa", "?dest=us");
             }
             System.Diagnostics.Process.Start(url);
         }
