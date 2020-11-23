@@ -127,7 +127,7 @@
             "Korea",
             "Latin/Central America",
             "United States",
-            "Rusia",
+            "Russia",
             "Southeast Asia",
             "Taiwan",
             "United Kingdom"});
@@ -274,7 +274,7 @@
             "Korea",
             "Latin/Central America",
             "United States",
-            "Rusia",
+            "Russia",
             "Southeast Asia",
             "Taiwan",
             "United Kingdom"});
